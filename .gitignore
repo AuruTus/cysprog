@@ -2,3 +2,9 @@ bin/
 *.zip
 *.out
 *.o
+
+# for lab1 mcc
+lab1/mcc/lex.yy.c
+lab1/mcc/mcc
+lab1/mcc/parser.tab.c
+lab1/mcc/parser.tab.h

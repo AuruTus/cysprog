@@ -15,6 +15,7 @@ else
 	@if [ ! -d "./bin/${base}" ]; then mkdir "./bin/${base}"; fi;
 # compile single c file
 	@${CC} ${CFLAGS} ${f} -o "./bin/${base}/$(notdir ${f:c=out})"
+	@echo "./bin/${base}/$(notdir ${f:c=out})"
 endif
 
 # all:

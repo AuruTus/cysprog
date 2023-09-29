@@ -25,6 +25,10 @@ endif
 lab1_notmain:
 	${MAKE} -C ./lab1/syscall/ notmain
 
+.PHONY: lab1_mcc
+lab1_mcc:
+	${MAKE} -C ./lab1/mcc/ all
+
 # all:
 # 	${CC} ${CFLAGS} SOURCES -o ./bin/${MAIN_OUT}
 # 	./bin/${MAIN_OUT}

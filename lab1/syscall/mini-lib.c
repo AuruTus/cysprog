@@ -62,8 +62,11 @@ int puts(char* s) {
 
 void exit(int status) {
     // Your code here:
-    // TODO();
-
+    asm(CALL(SYS_EXIT)
+        "movq %1, %%rdi\n"
+        "syscall\n"
+        :: "r"(status)
+        : "%rax", "%rdi");
 }
 
 int alarm(unsigned int seconds) {

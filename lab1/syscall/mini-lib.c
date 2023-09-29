@@ -71,8 +71,11 @@ void exit(int status) {
 
 int alarm(unsigned int seconds) {
     // Your code here:
-    // TODO();
-
+    asm(CALL(SYS_ALARM)
+        "movq %1, %%rdi\n"
+        "syscall\n"
+        :: "r"(seconds)
+        : "%rax", "%rdi");
 }
 
 

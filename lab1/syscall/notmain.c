@@ -1,11 +1,11 @@
 #include "mini-lib.h"
 
-struct timespec ts = {.tv_sec = 1, .tv_nsec = 0};
+struct timespec ts = { .tv_sec = 1, .tv_nsec = 0 };
 
-int notmain(){
-    alarm(5);
+int notmain() {
+    alarm(1);
 
-    for(;;) {
+    for (;;) {
         puts("hello, world\n");
         sleep(&ts, 0);
     }

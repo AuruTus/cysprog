@@ -28,7 +28,7 @@ int printf(char* s, ...) {
     return 0;
 }
 
-int write(int fd, int buf, int size) {
+int write(int fd, char* buf, int size) {
     long r;
     asm(CALL(SYS_WRITE)
         "movq %1, %%rdi\n"
@@ -37,44 +37,30 @@ int write(int fd, int buf, int size) {
         "syscall\n"
         "movq %%rax, %0\n"
         : "=r"(r)
-        : "r"(fd), "r"(buf), "r"(size)
-        : "%rax", "%rdi", "%rsi", "%rdx");
+        : "r"((long long int)fd), "r"(buf), "r"((long long int)size)
+        : "%rax", "%rdi", "%rsi", "%rdx", "memory");
     return (int)r;
 }
 
 int puts(char* s) {
-    // long n = strlen(s);
-    // long r;
-    // asm(CALL(SYS_WRITE)
-    //     "movq $1, %%rdi\n"
-    //     "movq %1, %%rsi\n"
-    //     "movq %2, %%rdx\n"
-    //     "syscall\n"
-    //     "movq %%rax, %0\n"
-    //     : "=r"(r)
-    //     : "r"(s), "r"(n)
-    //     : "%rax", "%rdi", "%rsi", "%rdx");
-    // return (int)r;
     return write(1, s, strlen(s));
 }
-
-
 
 void exit(int status) {
     // Your code here:
     asm(CALL(SYS_EXIT)
-        "movq %1, %%rdi\n"
+        "movq %0, %%rdi\n"
         "syscall\n"
-        :: "r"(status)
+        : : "r"((long long int)status)
         : "%rax", "%rdi");
 }
 
 int alarm(unsigned int seconds) {
     // Your code here:
     asm(CALL(SYS_ALARM)
-        "movq %1, %%rdi\n"
+        "movq %0, %%rdi\n"
         "syscall\n"
-        :: "r"(seconds)
+        : : "r"((long long int)seconds)
         : "%rax", "%rdi");
 }
 

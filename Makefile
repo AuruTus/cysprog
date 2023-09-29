@@ -1,3 +1,5 @@
+MAKE := make
+
 CC := gcc
 CFLAGS := -Wall
 
@@ -5,6 +7,7 @@ SOURCEDIR := .
 SOURCES := $(shell find $(SOURCEDIR) -name '*.c')
 MAIN_OUT := cysprog.out
 
+.PHONY: hello
 hello:
 ifeq (${f},)
 	@echo "f={file} must be provided"
@@ -17,6 +20,10 @@ else
 	@${CC} ${CFLAGS} ${f} -o "./bin/${base}/$(notdir ${f:c=out})"
 	@echo "./bin/${base}/$(notdir ${f:c=out})"
 endif
+
+.PHONY: lab1_notmain
+lab1_notmain:
+	${MAKE} -C ./lab1/syscall/ notmain
 
 # all:
 # 	${CC} ${CFLAGS} SOURCES -o ./bin/${MAIN_OUT}

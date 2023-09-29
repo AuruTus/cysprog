@@ -28,27 +28,12 @@ int printf(char* s, ...) {
     return 0;
 }
 
-int puts(char* s) {
-    long n = strlen(s);
-    long r;
-    asm(CALL(SYS_WRITE)
-        "movq $1, %%rdi\n"
-        "movq %1, %%rsi\n"
-        "movq %2, %%rdx\n"
-        "syscall\n"
-        "movq %%rax, %0\n"
-        : "=r"(r)
-        : "r"(s), "r"(n)
-        : "%rax", "%rdi", "%rsi", "%rdx");
-    return (int)r;
-}
-
 int write(int fd, int buf, int size) {
     long r;
     asm(CALL(SYS_WRITE)
-        "movq $1, %%rdi\n"
-        "movq %1, %%rsi\n"
-        "movq %2, %%rdx\n"
+        "movq %1, %%rdi\n"
+        "movq %2, %%rsi\n"
+        "movq %3, %%rdx\n"
         "syscall\n"
         "movq %%rax, %0\n"
         : "=r"(r)
@@ -56,6 +41,23 @@ int write(int fd, int buf, int size) {
         : "%rax", "%rdi", "%rsi", "%rdx");
     return (int)r;
 }
+
+int puts(char* s) {
+    // long n = strlen(s);
+    // long r;
+    // asm(CALL(SYS_WRITE)
+    //     "movq $1, %%rdi\n"
+    //     "movq %1, %%rsi\n"
+    //     "movq %2, %%rdx\n"
+    //     "syscall\n"
+    //     "movq %%rax, %0\n"
+    //     : "=r"(r)
+    //     : "r"(s), "r"(n)
+    //     : "%rax", "%rdi", "%rsi", "%rdx");
+    // return (int)r;
+    return write(1, s, strlen(s));
+}
+
 
 
 void exit(int status) {

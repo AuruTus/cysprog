@@ -49,7 +49,9 @@ static void PUSH() {
 }
 
 static void POP() {
-    // TODO
+    stackoffset--;
+    sprintf(instr, "\tlw\ta2, %d(sp)\n", 4 * stackoffset);
+    emit(instr);
 }
 
 static void compile_exp(Exp_t exp) {
@@ -61,7 +63,12 @@ static void compile_exp(Exp_t exp) {
         break;
     }
     case EXP_VAR: {
-        // TODO
+        Exp_Var e = (Exp_Var)exp;
+        // sprintf(instr, "\tlw\ta1, %s(rs1)\n", e->name);
+        sprintf(instr, "\tlui\ta1, %%hi(%s)\n", e->name);
+        emit(instr);
+        sprintf(instr, "\tlw\ta1, %%lo(%s)(a1)\n", e->name);
+        emit(instr);
         break;
     }
     case EXP_ADD: {
@@ -74,11 +81,21 @@ static void compile_exp(Exp_t exp) {
         break;
     }
     case EXP_SUB: {
-        // TODO
+        Exp_Sub e = (Exp_Sub)exp;
+        compile_exp(e->left);
+        PUSH();
+        compile_exp(e->right);
+        POP();
+        emit("\tsubw\ta1, a2, a1\n");
         break;
     }
     case EXP_TIMES: {
-        // TODO
+        Exp_Times e = (Exp_Times)exp;
+        compile_exp(e->left);
+        PUSH();
+        compile_exp(e->right);
+        POP();
+        emit("\tmulw\ta1, a1, a2\n");
         break;
     }
     case EXP_DIV: {
@@ -110,13 +127,12 @@ static void compile_stm(Stm_t stm) {
         break;
     }
     case STM_PRINT: {
-        // TODO
         Stm_Print s = (Stm_Print)stm;
         compile_exp(s->exp);
-        // emit("\tlw\ta5, a1");
-        // emit("\tmv\ta1, a5");
-        emit("\tlui\ta5, %hi(mcc_format)");
-        emit("\taddi\ta0, a5, %lo(mcc_format)");
+        // emit("\tlw\ta5, a1\n");
+        // emit("\tmv\ta1, a5\n");
+        emit("\tlui\ta5, %hi(mcc_format)\n");
+        emit("\taddi\ta0, a5, %lo(mcc_format)\n");
         emit("\tcall printf\n");
         break;
     }

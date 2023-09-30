@@ -21,111 +21,120 @@ static int local_fd = 1;
 
 
 // emit instructions
-static void emit(char *s){
+static void emit(char* s) {
     write(local_fd, s, strlen(s));
 }
 
 static void emit_vars() {
-    char *var = 0;
+    char* var = 0;
     emit("\n\t.section\t.sdata\n");
-    while ((var=set_next())){
+    while ((var = set_next())) {
         sprintf(instr, "\t.global\t%s\n", var);
         emit(instr);
         emit("\t.align\t2\n");
-        sprintf(instr,"\t.type\t%s, @object\n", var);
+        sprintf(instr, "\t.type\t%s, @object\n", var);
         emit(instr);
-        sprintf(instr,"\t.size\t%s, 4\n", var);
+        sprintf(instr, "\t.size\t%s, 4\n", var);
         emit(instr);
-        sprintf(instr,"%s:\n", var);
+        sprintf(instr, "%s:\n", var);
         emit(instr);
         emit("\t.zero\t4\n");
     }
 }
 
-static void PUSH(){
-    sprintf(instr,"\tsw\ta1, %d(sp)\n", 4*stackoffset);
+static void PUSH() {
+    sprintf(instr, "\tsw\ta1, %d(sp)\n", 4 * stackoffset);
     emit(instr);
     stackoffset++;
 }
 
-static void POP(){
+static void POP() {
     // TODO
 }
 
-static void compile_exp(Exp_t exp){
+static void compile_exp(Exp_t exp) {
     switch (exp->type) {
-        case EXP_NUM:{
-            Exp_Num e = (Exp_Num)exp;
-            sprintf(instr, "\tli\ta1, %d\n", e->num);
-            emit(instr);
-            break;
-        }
-        case EXP_VAR: {
-            // TODO
-            break;
-        }
-        case EXP_ADD: {
-            Exp_Add e = (Exp_Add) exp;
-            compile_exp(e->left);
-            PUSH();
-            compile_exp(e->right);
-            POP();
-            emit("\taddw\ta1, a1, a2\n");
-            break;
-        }
-        case EXP_SUB: {
-            // TODO
-            break;
-        }
-        case EXP_TIMES: {
-            // TODO
-            break;
-        }
-        case EXP_DIV: {
-            Exp_Div e = (Exp_Div) exp;
-            compile_exp(e->left);
-            PUSH();
-            compile_exp(e->right);
-            POP();
-            emit("\tdivw\ta1, a2, a1\n");
-            break;
-        }
-        default:{
-            emit("\t# Unknown expression type\n");
-            break;
-        }
+    case EXP_NUM: {
+        Exp_Num e = (Exp_Num)exp;
+        sprintf(instr, "\tli\ta1, %d\n", e->num);
+        emit(instr);
+        break;
+    }
+    case EXP_VAR: {
+        // TODO
+        break;
+    }
+    case EXP_ADD: {
+        Exp_Add e = (Exp_Add)exp;
+        compile_exp(e->left);
+        PUSH();
+        compile_exp(e->right);
+        POP();
+        emit("\taddw\ta1, a1, a2\n");
+        break;
+    }
+    case EXP_SUB: {
+        // TODO
+        break;
+    }
+    case EXP_TIMES: {
+        // TODO
+        break;
+    }
+    case EXP_DIV: {
+        Exp_Div e = (Exp_Div)exp;
+        compile_exp(e->left);
+        PUSH();
+        compile_exp(e->right);
+        POP();
+        emit("\tdivw\ta1, a2, a1\n");
+        break;
+    }
+    default: {
+        emit("\t# Unknown expression type\n");
+        break;
+    }
     }
 }
 
-static void compile_stm(Stm_t stm){
+static void compile_stm(Stm_t stm) {
     switch (stm->type) {
-        case STM_ASSIGN: {
-            Stm_Assign s = (Stm_Assign) stm;
-            set_add(s->x);
-            compile_exp(s->exp);
-            sprintf(instr, "\tlla\ta3, %s\n", s->x);
-            emit(instr);
-            sprintf(instr, "\tsw\ta1, 0(a3)\n");
-            emit(instr);
-            break;
-        }
-        case STM_PRINT: {
-            // TODO
-            break;
-        }
-        case CMD_SEQ: {
-            // TODO
-            break;
-        }
-        default: {
-            emit("\t# Unknown statement type\n");
-            break;
-        }
+    case STM_ASSIGN: {
+        Stm_Assign s = (Stm_Assign)stm;
+        set_add(s->x);
+        compile_exp(s->exp);
+        sprintf(instr, "\tlla\ta3, %s\n", s->x);
+        emit(instr);
+        sprintf(instr, "\tsw\ta1, 0(a3)\n");
+        emit(instr);
+        break;
+    }
+    case STM_PRINT: {
+        // TODO
+        Stm_Print s = (Stm_Print)stm;
+        compile_exp(s->exp);
+        // emit("\tlw\ta5, a1");
+        // emit("\tmv\ta1, a5");
+        emit("\tlui\ta5, %hi(mcc_format)");
+        emit("\taddi\ta0, a5, %lo(mcc_format)");
+        emit("\tcall printf\n");
+        break;
+    }
+    case CMD_SEQ: {
+        Stm_Seq s = (Stm_Seq)stm;
+        compile_stm(s->left);
+        compile_stm(s->right);
+        break;
+    }
+    default: {
+        emit("\t# Unknown statement type\n");
+        break;
+    }
     }
 }
 
 // compile a whole program
-void riscv_compile(Stm_t prog, int fd){
+void riscv_compile(Stm_t prog, int fd) {
 
 
     local_fd = fd;
@@ -141,7 +150,7 @@ void riscv_compile(Stm_t prog, int fd){
     emit("\t.type main, @function\n");
     emit("main:\n");
 
-    int stacksize = (20 + 4 * (Deep_stm(prog)))/8 * 8;
+    int stacksize = (20 + 4 * (Deep_stm(prog))) / 8 * 8;
 
     sprintf(instr, "\taddi\tsp, sp, -%d\n", stacksize);
     emit(instr);
@@ -172,22 +181,22 @@ void riscv_compile(Stm_t prog, int fd){
 
 }
 
-int max(int x, int y){
-    return x>y ? x : y;
+int max(int x, int y) {
+    return x > y ? x : y;
 }
 
-int Deep_stm(Stm_t stm){
-    switch (stm->type){
-    case STM_PRINT :{
-        Stm_Print s = (Stm_Print) stm;
+int Deep_stm(Stm_t stm) {
+    switch (stm->type) {
+    case STM_PRINT: {
+        Stm_Print s = (Stm_Print)stm;
         return Deep_exp(s->exp);
     }
-    case STM_ASSIGN :{
-        Stm_Assign s = (Stm_Assign) stm;
+    case STM_ASSIGN: {
+        Stm_Assign s = (Stm_Assign)stm;
         return Deep_exp(s->exp);
     }
-    case CMD_SEQ :{
-        Stm_Seq s = (Stm_Seq) stm;
+    case CMD_SEQ: {
+        Stm_Seq s = (Stm_Seq)stm;
         return max(Deep_stm(s->left), Deep_stm(s->right));
     }
     default: {
@@ -197,16 +206,15 @@ int Deep_stm(Stm_t stm){
     }
 }
 
-int Deep_exp(Exp_t exp){
-    switch (exp->type)
-    {
-    case EXP_NUM :
-    case EXP_VAR :
+int Deep_exp(Exp_t exp) {
+    switch (exp->type) {
+    case EXP_NUM:
+    case EXP_VAR:
         return 0;
-    case EXP_ADD :
-    case EXP_SUB :
-    case EXP_TIMES :
-    case EXP_DIV :{
+    case EXP_ADD:
+    case EXP_SUB:
+    case EXP_TIMES:
+    case EXP_DIV: {
         Exp_Div e = (Exp_Div)exp;
         return max(Deep_exp(e->left), Deep_exp(e->right)) + 1;
     }

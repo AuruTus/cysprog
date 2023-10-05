@@ -65,3 +65,29 @@ child: exiting
 
 **A:** If the output is big or a stream, we can reuse temp file as a buffer for the late operations (maybe not one) to avoid unneeded re-exec.
 
+## Exercise 8
+
+```bash
+css-lab@ cat hello.txt | grep -n hello > c.txt ; ls -l 
+enter
+seq_left: pipe
+pipe_left: cat hello.txt 
+; pipe_right: redir: 1
+redir_left: grep -n hello 
+; redir_right: c.txt 
+; seq_right: ls -l 
+css-lab@ sleep 10 &
+back: sleep 10
+```
+
+## Exercise 9
+
+```bash
+css-lab@ cat hello.txt > c.txt 
+css-lab@ cat hello.txt | grep -n hello>c.txt; cat c.txt; ls
+1:hello
+2:hello;
+3:hello, world!
+alloc.h  ast.h  _hello.txt  lex.yy.c  Makefile      parser.tab.h  README.md  shell
+ast.c    c.txt  hello.txt   main.c    parser.tab.c  parser.y      scanner.l  tmp_hello.txt
+```

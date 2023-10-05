@@ -7,6 +7,8 @@
 - [Exersice 4](#exersice-4)
 - [Exersice 5](#exersice-5)
 - [Exersice 6](#exersice-6)
+- [Exersice 8](#exersice-8)
+- [Exersice 9](#exersice-9)
 
 ## Exersice 1
 

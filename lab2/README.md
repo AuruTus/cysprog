@@ -83,11 +83,30 @@ back: sleep 10
 ## Exercise 9
 
 ```bash
-css-lab@ cat hello.txt > c.txt 
+css-lab@ cat hello.txt > c.txt
+css-lab@ cat c.txt
+hello
+hello;
+hello, world!
 css-lab@ cat hello.txt | grep -n hello>c.txt; cat c.txt; ls
 1:hello
 2:hello;
 3:hello, world!
 alloc.h  ast.h  _hello.txt  lex.yy.c  Makefile      parser.tab.h  README.md  shell
 ast.c    c.txt  hello.txt   main.c    parser.tab.c  parser.y      scanner.l  tmp_hello.txt
+css-lab@ sleep 1000 &
+css-lab@ ps -aux | grep sleep
+aurutus   7508  0.0  0.0   8368  1052 ?        Ss   19:35   0:00 sleep 1000
+```
+
+```bash
+css-lab@ cat < hello.txt
+hello
+hello;
+hello, world!
+css-lab@ cat < hello.txt > cc.txt
+css-lab@ cat cc.txt
+hello
+hello;
+hello, world!
 ```

@@ -3,6 +3,7 @@ bin/
 *.out
 *.o
 *.s
+*.txt
 
 # for lab1 mcc
 lab1/mcc/lex.yy.c

@@ -190,15 +190,15 @@ void Cmd_run(struct Cmd_t* cmd) {
     case CMD_BACK: {
         Cmd_Back t = (Cmd_Back)cmd;
         Cmd_t back = t->back;
+        const int _nochdir = 1;
+        const int _noclose = 0;
 
-        switch (fork()) {
-        case -1:
-            fprintf(stderr, "cannot spawn child process.\n");
-            break;
+        switch (daemon(_nochdir, _noclose)) {
         case 0:
             Cmd_run(back);
             break;
         default:
+            fprintf(stderr, "cannot spawn daemon process.\n");
             break;
         }
 

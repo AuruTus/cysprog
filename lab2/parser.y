@@ -28,6 +28,7 @@ extern Cmd_t root;
 
 %left '|' ';'
 %left '>'
+%left '<'
 %left '&'
 
 %%
@@ -41,6 +42,7 @@ command	        :  basic_command		    { $$ = $1;}
 		        |  command '&'			    { $$ = Cmd_Back_new($1);}
 		        |  command '|' command 		{ $$ = Cmd_Pipe_new($1, $3);}
 		        |  command '>' command		{ $$ = Cmd_Redir_new($1, $3, 1);}
+		        |  command '<' command		{ $$ = Cmd_Redir_new($1, $3, 0);}
 		        ;
 		
 basic_command   :  T_ARG args			    { struct node *t = make_node($1, $2); $$ = Cmd_Atom_new(t);}

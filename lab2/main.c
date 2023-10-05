@@ -8,37 +8,39 @@
 Cmd_t root = 0;
 extern int yyparse();
 
-int main(){
-    while(true) {
+int main() {
+    while (true) {
         printf("css-lab@ ");
         yyparse();
 
-        if(root == NULL){
+        if (root == NULL) {
             continue;
         }
 
-        if(root->type == CMD_ATOM){
-            struct Cmd_Atom *acmd = (struct Cmd_Atom*)root;
-            struct node *node = acmd->node;
-            if(!strcmp(node->data, "exit")){// input "exit" cmd
+        if (root->type == CMD_ATOM) {
+            struct Cmd_Atom* acmd = (struct Cmd_Atom*)root;
+            struct node* node = acmd->node;
+            if (!strcmp(node->data, "exit")) {// input "exit" cmd
                 break;
-            }else if(!strcmp(node->data, "cd")){// input "cd" cmd
+            } else if (!strcmp(node->data, "cd")) {// input "cd" cmd
                 node = node->next;
-                if(node){
+                if (node) {
                     char cdPath[20];
                     strcpy(cdPath, node->data);
-                    if(chdir(cdPath) < 0)
-                        fprintf(stderr,"cannot cd %s.\n", cdPath);
+                    if (chdir(cdPath) < 0)
+                        fprintf(stderr, "cannot cd %s.\n", cdPath);
                 }
-            }else{// other cmds
-                if(fork()==0){
-                    Cmd_run(root);
+            } else {// other cmds
+                if (fork() == 0) {
+                    // Cmd_run(root);
+                    Cmd_print(root);
                 }
                 wait(0);
             }
-        } else{// Compound commands
-            if(fork()==0){
-                Cmd_run(root);
+        } else {// Compound commands
+            if (fork() == 0) {
+                // Cmd_run(root);
+                Cmd_print(root);
             }
             wait(0);
         }

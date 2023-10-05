@@ -77,32 +77,60 @@ void Cmd_print(struct Cmd_t* cmd) {
             printf("%s ", node->data);
             node = node->next;
         }
+        printf("\n");
         break;
     }
 
     case CMD_SEQ: {
         printf("enter\n");
         struct Cmd_Seq* t = (struct Cmd_Seq*)cmd;
-        printf("enter\n");
         Cmd_t left = t->left;
         Cmd_t right = t->right;
 
+        printf("seq_left: ");
         Cmd_print(left);
         printf("; ");
+        printf("seq_right: ");
         Cmd_print(right);
         break;
     }
 
     case CMD_BACK: {
-        // TODO
+        Cmd_Back t = (Cmd_Back)cmd;
+        Cmd_t back = t->back;
+
+        printf("back: ");
+        Cmd_print(back);
+        break;
     }
 
     case CMD_PIPE: {
-        // TODO
+        Cmd_Pipe t = (Cmd_Pipe)cmd;
+        Cmd_t left = t->left;
+        Cmd_t right = t->right;
+
+        printf("pipe\n");
+        printf("pipe_left: ");
+        Cmd_print(left);
+        printf("; ");
+        printf("pipe_right: ");
+        Cmd_print(right);
+        break;
     }
 
     case CMD_REDIR: {
-        // TODO
+        Cmd_Redir t = (Cmd_Redir)cmd;
+        Cmd_t left = t->left;
+        Cmd_t right = t->right;
+        int fd = t->fd;
+
+        printf("redir: %d\n", fd);
+        printf("redir_left: ");
+        Cmd_print(left);
+        printf("; ");
+        printf("redir_right: ");
+        Cmd_print(right);
+        break;
     }
     default:
         break;
@@ -143,24 +171,73 @@ void Cmd_run(struct Cmd_t* cmd) {
         Cmd_t left = t->left;
         Cmd_t right = t->right;
 
-        if (fork() == 0) {
+        switch (fork()) {
+        case -1:
+            fprintf(stderr, "cannot spawn child process.\n");
+            break;
+        case 0:
             Cmd_run(left);
+            break;
+        default:
+            wait(NULL);
+            Cmd_run(right);
+            break;
         }
-        wait(0);
-        Cmd_run(right);
+
         break;
     }
 
     case CMD_BACK: {
-        // TODO
+        Cmd_Back t = (Cmd_Back)cmd;
+        Cmd_t back = t->back;
+
+        switch (fork()) {
+        case -1:
+            fprintf(stderr, "cannot spawn child process.\n");
+            break;
+        case 0:
+            Cmd_run(back);
+            break;
+        default:
+            break;
+        }
+
+        break;
     }
 
     case CMD_PIPE: {
-        // TODO
+        Cmd_Pipe t = (Cmd_Pipe)cmd;
+        Cmd_t left = t->left;
+        Cmd_t right = t->right;
+        int fd[2];
+
+        pipe(fd);
+
+        switch (fork()) {
+        case -1:
+            fprintf(stderr, "cannot spawn child process.\n");
+            break;
+        case 0:
+            close(fd[0]);
+            dup2(fd[1], STDOUT_FILENO);
+            Cmd_run(left);
+            close(fd[1]);
+            break;
+        default:
+            close(fd[1]);
+            dup2(fd[0], STDIN_FILENO);
+            wait(NULL);
+            Cmd_run(right);
+            close(fd[0]);
+            break;
+        }
+
+        break;
     }
 
     case CMD_REDIR: {
-        // TODO
+
+        break;
     }
 
     default:

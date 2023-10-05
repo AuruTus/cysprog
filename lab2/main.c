@@ -32,15 +32,15 @@ int main() {
                 }
             } else {// other cmds
                 if (fork() == 0) {
-                    // Cmd_run(root);
-                    Cmd_print(root);
+                    Cmd_run(root);
+                    // Cmd_print(root);
                 }
                 wait(0);
             }
         } else {// Compound commands
             if (fork() == 0) {
-                // Cmd_run(root);
-                Cmd_print(root);
+                Cmd_run(root);
+                // Cmd_print(root);
             }
             wait(0);
         }

@@ -210,6 +210,7 @@ void Cmd_run(struct Cmd_t* cmd) {
         Cmd_t left = t->left;
         Cmd_t right = t->right;
         int fd[2];
+        int std_fd;
 
         pipe(fd);
 
@@ -218,17 +219,33 @@ void Cmd_run(struct Cmd_t* cmd) {
             fprintf(stderr, "cannot spawn child process.\n");
             break;
         case 0:
+            // left arm
+
             close(fd[0]);
+            // redirect stdout
+            std_fd = dup(STDOUT_FILENO);
             dup2(fd[1], STDOUT_FILENO);
+            // run and output
             Cmd_run(left);
+            // close pipe write and reopen stdout
+            dup2(std_fd, STDOUT_FILENO);
             close(fd[1]);
+            close(std_fd);
             break;
         default:
+            // right arm
+
             close(fd[1]);
+            // redirect stdin
+            std_fd = dup(STDIN_FILENO);
             dup2(fd[0], STDIN_FILENO);
+            // await input
             wait(NULL);
             Cmd_run(right);
+            // close pipe read and reopen stdin
+            dup2(std_fd, STDIN_FILENO);
             close(fd[0]);
+            close(std_fd);
             break;
         }
 
@@ -236,6 +253,42 @@ void Cmd_run(struct Cmd_t* cmd) {
     }
 
     case CMD_REDIR: {
+        Cmd_Redir t = (Cmd_Redir)cmd;
+        Cmd_t left = t->left;
+        Cmd_t right = t->right;
+        int fd = t->fd;
+        int std_fd;
+
+        switch (fd) {
+        case 0:
+            // input redirection
+
+            // redirect stdin
+            fd = open(((Cmd_Atom)right)->node->data, O_RDONLY);
+            std_fd = dup(STDIN_FILENO);
+            dup2(fd, STDIN_FILENO);
+            // run and input
+            Cmd_run(left);
+            // close pipe read and reopen stdin
+            dup2(std_fd, STDIN_FILENO);
+            close(fd);
+            close(std_fd);
+            break;
+        case 1:
+            // output redirection
+
+            // redirect stdout
+            fd = open(((Cmd_Atom)right)->node->data, O_WRONLY);
+            std_fd = dup(STDOUT_FILENO);
+            dup2(fd, STDOUT_FILENO);
+            // run and output
+            Cmd_run(left);
+            // close pipe read and reopen stdin
+            dup2(std_fd, STDOUT_FILENO);
+            close(fd);
+            close(std_fd);
+            break;
+        }
 
         break;
     }

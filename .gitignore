@@ -10,3 +10,6 @@ lab1/mcc/lex.yy.c
 lab1/mcc/mcc
 lab1/mcc/parser.tab.c
 lab1/mcc/parser.tab.h
+
+# for lab2
+lab2/shell

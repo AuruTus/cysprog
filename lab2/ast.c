@@ -278,7 +278,7 @@ void Cmd_run(struct Cmd_t* cmd) {
             // output redirection
 
             // redirect stdout
-            fd = open(((Cmd_Atom)right)->node->data, O_WRONLY);
+            fd = open(((Cmd_Atom)right)->node->data, O_WRONLY | O_CREAT, 0777);
             std_fd = dup(STDOUT_FILENO);
             dup2(fd, STDOUT_FILENO);
             // run and output

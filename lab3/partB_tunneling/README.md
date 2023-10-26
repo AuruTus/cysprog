@@ -8,7 +8,10 @@
 Q: Do we need calculate the checksum field for the ICMP header? If so, what algorithm we should use?
 
 
-A: Sure, we need do this. As cited from `RFC 792`
+A: For formal ICMP protocal, we need do this. But as long as this is a self-defined ICMP, it's not a huge
+problem not to implement all details.
+
+And as cited from `RFC 792`
 
 ```text
  The 16 bit one's complement of the one's complement sum of all 16

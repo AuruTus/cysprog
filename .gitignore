@@ -4,6 +4,7 @@ bin/
 *.o
 *.s
 *.txt
+.vscode/
 
 # for lab1 mcc
 lab1/mcc/lex.yy.c

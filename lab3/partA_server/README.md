@@ -1,7 +1,7 @@
 # Lab3 Assignment Part A
 
 **Table of Contents**
-- [Exersice 7](#exersice-6)
+- [Exersice 7](#exersice-7)
 
 ## Exersice 7
 

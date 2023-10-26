@@ -21,7 +21,7 @@ do{\
 // struct ifeq
 #include <net/if.h>
 // #include "packet-analyze.h"
-#include "packetProcess.h"
+#include "packet-process.h"
 #include "filter.h"
 
 
@@ -34,72 +34,72 @@ do{\
 static char buf[BUF_SIZE];
 
 // create the socket (set up the required flag for mode):
-int raw_init (const char *device){
+int raw_init(const char* device) {
     /* Open A Raw Socket */
-    int raw_socket = socket (PF_PACKET, SOCK_RAW, htons (ETH_P_ALL));
-    if (raw_socket < 1){
-        printf ("ERROR: Could not open socket, Got #?\n");
-        exit (1);
+    int raw_socket = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    if (raw_socket < 1) {
+        printf("ERROR: Could not open socket, Got #?\n");
+        exit(1);
     }
 
     /* Set the device to use */
     struct ifreq ifr;
-    memset (&ifr, 0, sizeof (struct ifreq));
-    strcpy (ifr.ifr_name, device);
+    memset(&ifr, 0, sizeof(struct ifreq));
+    strcpy(ifr.ifr_name, device);
     /* Get the current flags that the device might have */
-    if (ioctl (raw_socket, SIOCGIFFLAGS, &ifr) == -1){
-        perror ("Error: Could not retrieve the flags from the device.\n");
-        exit (1);
+    if (ioctl(raw_socket, SIOCGIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not retrieve the flags from the device.\n");
+        exit(1);
     }
     /* Set the old flags plus the IFF_PROMISC flag */
     ifr.ifr_flags |= IFF_PROMISC;
-    if (ioctl (raw_socket, SIOCSIFFLAGS, &ifr) == -1){
-        perror ("Error: Could not set flag IFF_PROMISC");
-        exit (1);
+    if (ioctl(raw_socket, SIOCSIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not set flag IFF_PROMISC");
+        exit(1);
     }
-    printf ("Set up the promiscuous mode\n");
+    printf("Set up the promiscuous mode\n");
 
     /* Configure the device */
-    if (ioctl (raw_socket, SIOCGIFINDEX, &ifr) < 0){
-        perror ("Error: Error getting the device index.\n");
-        exit (1);
+    if (ioctl(raw_socket, SIOCGIFINDEX, &ifr) < 0) {
+        perror("Error: Error getting the device index.\n");
+        exit(1);
     }
     return raw_socket;
 }
 
 // clear the flag:
-void clear_flag(char *device, int sock_fd){
+void clear_flag(char* device, int sock_fd) {
     /* Get the current flags that the device might have */
     struct ifreq ifr;
-    memset (&ifr, 0, sizeof (struct ifreq));
-    strcpy (ifr.ifr_name, device);
-    if (ioctl (sock_fd, SIOCGIFFLAGS, &ifr) == -1){
-        perror ("Error: Could not retrieve the flags from the device.\n");
-        exit (1);
+    memset(&ifr, 0, sizeof(struct ifreq));
+    strcpy(ifr.ifr_name, device);
+    if (ioctl(sock_fd, SIOCGIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not retrieve the flags from the device.\n");
+        exit(1);
     }
     /* Clear IFF_PROMISC flag */
     ifr.ifr_flags &= ~IFF_PROMISC;
-    if (ioctl (sock_fd, SIOCSIFFLAGS, &ifr) == -1){
-        perror ("Error: Could not set flag IFF_PROMISC");
-        exit (1);
+    if (ioctl(sock_fd, SIOCSIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not set flag IFF_PROMISC");
+        exit(1);
     }
-    printf ("Cleared promiscuous mode\n");
+    printf("Cleared promiscuous mode\n");
 }
 
-int main (int argc, char **argv){
+int main(int argc, char** argv) {
     int max_rounds = MAX_ROUND;
-    if(argc < 2){
+    if (argc < 2) {
         printf("Usage: ./main.out <device>\n");
         exit(1);
     }
-    char *device = argv[1];
+    char* device = argv[1];
 
     // create a new raw socket
     int sock_fd = raw_init(device);
     printf("Start sniffing\n");
 
     int loops = 0;
-    while(1){
+    while (1) {
         // if(loops > max_rounds)
         //    break;
 
@@ -109,12 +109,12 @@ int main (int argc, char **argv){
         struct sockaddr sock_addr;
         memset(&sock_addr, 0, sizeof(sock_addr));
         unsigned int sock_addr_len = sizeof(sock_addr);
-        ssize_t n = recvfrom(sock_fd, buf, BUF_SIZE, 0, (struct sockaddr *)&sock_addr, &sock_addr_len);
-        if(n > 0){
-            if(filterByProtocol(buf, 4)) {
+        ssize_t n = recvfrom(sock_fd, buf, BUF_SIZE, 0, (struct sockaddr*)&sock_addr, &sock_addr_len);
+        if (n > 0) {
+            if (filterByProtocol(buf, 4)) {
                 packet_process(buf, n);
             }
-        }else{
+        } else {
             printf("error in recvfrom func\n");
             return -1;
         }

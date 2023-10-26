@@ -1,6 +1,6 @@
+	# // sniffing requires super user privilege
 all:
 	gcc promiscuous_main.c packet-analyze.c -o main.out
-	// sniffing requires super user privilege
 	sudo ./main.out
 
 sniff:
@@ -8,5 +8,5 @@ sniff:
 	sudo ./analysis.out
 
 clean:
-  rm -rf *.out
+	rm -rf *.out
 

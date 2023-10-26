@@ -31,39 +31,49 @@ do{\
 static char buf[BUF_SIZE];
 
 // create the socket (set up the required flag for mode):
-int raw_init (const char *device){
+int raw_init(const char* device) {
     // Exercise 1: Create a raw socket and enable promiscuous mode
     // Add your code here:
-    TODO();
-
+    int raw_socket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    struct ifreq ifr;
+    memset(&ifr, 0, sizeof(struct ifreq));
+    strcpy(ifr.ifr_name, device);
+    ioctl(raw_socket, SIOCGIFFLAGS, &ifr);
+    ifr.ifr_flags |= IFF_PROMISC;
+    ioctl(raw_socket, SIOCSIFFLAGS, &ifr);
+    return raw_socket;
 }
 
 // clear the flag:
-void clear_flag(char *device, int sock_fd){
+void clear_flag(char* device, int sock_fd) {
     // Exercise 1: turn off promiscuous mode
     // Add your code here:
-    TODO();
-
+    struct ifreq ifr;
+    memset(&ifr, 0, sizeof(struct ifreq));
+    strcpy(ifr.ifr_name, device);
+    ioctl(sock_fd, SIOCGIFFLAGS, &ifr);
+    ifr.ifr_flags &= ~IFF_PROMISC;
+    ioctl(sock_fd, SIOCSIFFLAGS, &ifr);
 }
 
-int main (int argc, char **argv){
+int main(int argc, char** argv) {
     int max_rounds = MAX_ROUND;
-    if(argc < 2){
+    if (argc < 2) {
         printf("Usage: ./main.out <device>\n");
         exit(1);
     }
-    char *device = argv[1];
+    char* device = argv[1];
 
     // create a new raw socket
     int sock_fd = raw_init(device);
     printf("Start sniffing\n");
 
-    while(1){
+    while (1) {
         // the specification requires to initialize the sock_addr_len:
         struct sockaddr sock_addr;
         memset(&sock_addr, 0, sizeof(sock_addr));
         unsigned int sock_addr_len = sizeof(sock_addr);
-        ssize_t n = recvfrom(sock_fd, buf, BUF_SIZE, 0, (struct sockaddr *)&sock_addr, &sock_addr_len);
+        ssize_t n = recvfrom(sock_fd, buf, BUF_SIZE, 0, (struct sockaddr*)&sock_addr, &sock_addr_len);
         if (n == -1)
             printf("Error: socket recv\n");
 
@@ -72,7 +82,7 @@ int main (int argc, char **argv){
     }
     // a summary:
     printf("arps = %d, ips = %d, ipv6 = %d\n",
-           eth_count.arps, eth_count.ips, eth_count.ipv6s);
+        eth_count.arps, eth_count.ips, eth_count.ipv6s);
     printf("tcps = %d, udps = %d\n", ip_count.tcps, ip_count.udps);
 
     clear_flag(device, sock_fd);

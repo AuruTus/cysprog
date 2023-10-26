@@ -15,7 +15,6 @@ do{\
 
 
 
-
 #define SERVER_PORT 12345
 #define BUF_SIZE 1024
 
@@ -69,6 +68,7 @@ int main() {
         inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
         printf("Accepted connection from %s:%d\n", client_ip, ntohs(client_addr.sin_port));
 
+
         while (1) {
             memset(buffer, 0, sizeof(buffer)); // Clear the buffer
 
@@ -80,7 +80,24 @@ int main() {
             // Exercise 3. Add your code:
             // Add your code here:
 
+            if (strchr(buffer, '.') != NULL) {
+                double n = atof(buffer);
+                double nn = n * n;
 
+                memset(buffer, 0, sizeof(buffer));
+                sprintf(buffer, "%f", nn);
+            } else {
+                long int n = atoi(buffer);
+                long int nn = n * n;
+
+                memset(buffer, 0, sizeof(buffer));
+                sprintf(buffer, "%ld", nn);
+            }
+
+            if (write(client_sock_fd, buffer, strlen(buffer)) == -1) {
+                break;
+                perror("Write error");
+            }
         }
 
         close(client_sock_fd);

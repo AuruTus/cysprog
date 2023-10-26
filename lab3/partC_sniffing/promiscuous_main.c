@@ -35,12 +35,25 @@ int raw_init(const char* device) {
     // Exercise 1: Create a raw socket and enable promiscuous mode
     // Add your code here:
     int raw_socket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    if (raw_socket < 1) {
+        printf("ERROR: Could not open socket, Got #?\n");
+        exit(1);
+    }
+
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(struct ifreq));
     strcpy(ifr.ifr_name, device);
-    ioctl(raw_socket, SIOCGIFFLAGS, &ifr);
+    if (ioctl(raw_socket, SIOCGIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not retrieve the flags from the device.\n");
+        exit(1);
+    }
     ifr.ifr_flags |= IFF_PROMISC;
-    ioctl(raw_socket, SIOCSIFFLAGS, &ifr);
+    if (ioctl(raw_socket, SIOCSIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not set flag IFF_PROMISC");
+        exit(1);
+    }
+    printf("Set up the promiscuous mode\n");
+
     return raw_socket;
 }
 
@@ -51,9 +64,16 @@ void clear_flag(char* device, int sock_fd) {
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(struct ifreq));
     strcpy(ifr.ifr_name, device);
-    ioctl(sock_fd, SIOCGIFFLAGS, &ifr);
+    if (ioctl(sock_fd, SIOCGIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not retrieve the flags from the device.\n");
+        exit(1);
+    }
     ifr.ifr_flags &= ~IFF_PROMISC;
-    ioctl(sock_fd, SIOCSIFFLAGS, &ifr);
+    if (ioctl(sock_fd, SIOCSIFFLAGS, &ifr) == -1) {
+        perror("Error: Could not set flag IFF_PROMISC");
+        exit(1);
+    }
+    printf("Cleared promiscuous mode\n");
 }
 
 int main(int argc, char** argv) {

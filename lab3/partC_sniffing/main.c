@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
         unsigned int sock_addr_len = sizeof(sock_addr);
         ssize_t n = recvfrom(sock_fd, buf, BUF_SIZE, 0, (struct sockaddr*)&sock_addr, &sock_addr_len);
         if (n > 0) {
-            if (filterByProtocol(buf, 4)) {
+            if (filterByProtocol(buf, 3)) {
                 packet_process(buf, n);
             }
         } else {

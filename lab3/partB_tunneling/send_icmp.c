@@ -22,13 +22,13 @@ do{\
 extern unsigned char sendbuff[BUFFSIZE];
 extern unsigned char recvbuff[BUFFSIZE];
 
-extern tunnel *tnel;
-extern int socket;
+extern tunnel* tnel;
+extern int sckt;
 extern struct sockaddr_in dest_addr;
 extern unsigned short total_len;
 
 static unsigned short icmp_checksum(
-                unsigned short *ptr, int nbytes) {
+    unsigned short* ptr, int nbytes) {
     long sum;
     unsigned short oddbyte;
     unsigned short answer;
@@ -39,7 +39,7 @@ static unsigned short icmp_checksum(
     }
     if (nbytes == 1) {
         oddbyte = 0;
-        *((uint8_t *) &oddbyte) = *(uint8_t *)ptr;
+        *((uint8_t*)&oddbyte) = *(uint8_t*)ptr;
         sum += oddbyte;
     }
     sum = (sum >> 16) + (sum & 0xffff);
@@ -49,12 +49,12 @@ static unsigned short icmp_checksum(
 }
 
 
-void init_icmp_packet(const char *myname,
-                     const char *whoname, const char *dst_ip) {
-    tnel = (tunnel *)malloc(sizeof(tunnel));
+void init_icmp_packet(const char* myname,
+    const char* whoname, const char* dst_ip) {
+    tnel = (tunnel*)malloc(sizeof(tunnel));
     memcpy(tnel->sname, myname, strlen(myname));
     memcpy(tnel->dname, whoname, strlen(whoname));
-    struct icmphdr *icmph = (struct icmphdr *)(sendbuff);
+    struct icmphdr* icmph = (struct icmphdr*)(sendbuff);
 
     icmph->code = 0;
     icmph->un.echo.id = htons(1);
@@ -63,25 +63,37 @@ void init_icmp_packet(const char *myname,
     inet_pton(AF_INET, dst_ip, &dest_addr.sin_addr);
 }
 
-int senddata(char *data){
+int senddata(char* data) {
     // Exercise 2.
     // Add your code here:
-    TODO();
+    tunnel* recv = (tunnel*)(sendbuff + sizeof(struct icmphdr));
+    memcpy(recv->sname, tnel->sname, sizeof(tnel->sname));
+    memcpy(recv->dname, tnel->dname, sizeof(tnel->dname));
+    memcpy(recv->data, data, strlen(data));
 
-    return 0;
+    int i = sendto(
+        sckt,
+        sendbuff,
+        sizeof(struct icmphdr) + 20 + strlen(data),
+        0,
+        (struct sockaddr*)&dest_addr,
+        sizeof(dest_addr)
+    );
+    return i;
 }
 
-int filter(struct icmphdr *icmph){
-    tunnel *recv = (tunnel *)(recvbuff + sizeof(struct iphdr)
-                                      + sizeof(struct icmphdr)); 
+int filter(struct icmphdr* icmph) {
+    tunnel* recv = (tunnel*)(recvbuff + sizeof(struct iphdr)
+        + sizeof(struct icmphdr));
     if (icmph->type != ICMP_ECHO ||
-        (strcmp(recv->dname, tnel->sname) != 0))
+        (strcmp(recv->dname, tnel->sname) != 0)) {
         return 0;
+    }
     return 1;
 }
 
-void encrypt(){
+void encrypt() {
 }
 
-void decrypt(){
+void decrypt() {
 }

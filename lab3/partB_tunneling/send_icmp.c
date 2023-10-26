@@ -71,7 +71,7 @@ int senddata(char* data) {
     memcpy(recv->dname, tnel->dname, sizeof(tnel->dname));
     memcpy(recv->data, data, strlen(data));
 
-    int i = sendto(
+    return sendto(
         sckt,
         sendbuff,
         sizeof(struct icmphdr) + 20 + strlen(data),
@@ -79,7 +79,6 @@ int senddata(char* data) {
         (struct sockaddr*)&dest_addr,
         sizeof(dest_addr)
     );
-    return i;
 }
 
 int filter(struct icmphdr* icmph) {

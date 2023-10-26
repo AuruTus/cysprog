@@ -10,13 +10,14 @@ square-client:
 	./square-client.out
 
 web-server:
-	mkdir -p $(HOME)/mywebsite 
-	cp index.html $(HOME)/mywebsite/index.html
+	mkdir -p ${HOME}/mywebsite 
+	cp index.html ${HOME}/mywebsite/index.html
 	gcc web-server.c -o web-server.out
 	./web-server.out
 
 clean:
 	rm -rf *.i *.s *.o *.out core.*
+	rm $(HOME)/mywebsite
 
 
 

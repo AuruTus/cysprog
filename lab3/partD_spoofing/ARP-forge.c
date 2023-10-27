@@ -24,7 +24,7 @@ do{\
 
 struct ifreq ifreq_c, ifreq_i, ifreq_ip; /// for each ioctl keep diffrent ifreq structure otherwise error may come in sending(sendto )
 int sock_raw;
-unsigned char *sendbuff;
+unsigned char* sendbuff;
 
 #define DESTMAC0 0xff
 #define DESTMAC1 0xff
@@ -51,14 +51,14 @@ void get_mac() {
 	if ((ioctl(sock_raw, SIOCGIFHWADDR, &ifreq_c)) < 0)
 		printf("error in SIOCGIFHWADDR ioctl reading");
 	printf("Mac= %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n",
-		   (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[0]),
-		   (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[1]),
-		   (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[2]),
-		   (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[3]),
-		   (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[4]),
-		   (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[5]));
+		(unsigned char)(ifreq_c.ifr_hwaddr.sa_data[0]),
+		(unsigned char)(ifreq_c.ifr_hwaddr.sa_data[1]),
+		(unsigned char)(ifreq_c.ifr_hwaddr.sa_data[2]),
+		(unsigned char)(ifreq_c.ifr_hwaddr.sa_data[3]),
+		(unsigned char)(ifreq_c.ifr_hwaddr.sa_data[4]),
+		(unsigned char)(ifreq_c.ifr_hwaddr.sa_data[5]));
 	printf("ethernet packaging start ... \n");
-	struct ethhdr *eth = (struct ethhdr *)(sendbuff);
+	struct ethhdr* eth = (struct ethhdr*)(sendbuff);
 	eth->h_source[0] = (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[0]);
 	eth->h_source[1] = (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[1]);
 	eth->h_source[2] = (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[2]);
@@ -77,7 +77,7 @@ void get_mac() {
 }
 
 void get_arp() {
-	struct ether_arp *arp = (struct ether_arp *)(sendbuff + sizeof(struct ethhdr));
+	struct ether_arp* arp = (struct ether_arp*)(sendbuff + sizeof(struct ethhdr));
 	arp->ea_hdr.ar_hrd = htons(ARPHRD_ETHER);
 	arp->ea_hdr.ar_pro = htons(ETH_P_IP);
 	arp->ea_hdr.ar_hln = 6;
@@ -86,22 +86,42 @@ void get_arp() {
 	/* sender hardware address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
- TODO();
+// TODO();
+	arp->arp_sha[0] = DESTMAC0;
+	arp->arp_sha[1] = DESTMAC1;
+	arp->arp_sha[2] = DESTMAC2;
+	arp->arp_sha[3] = DESTMAC3;
+	arp->arp_sha[4] = DESTMAC4;
+	arp->arp_sha[5] = DESTMAC5;
 
 	/* sender protocol address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
- TODO();
+// TODO();
+	arp->arp_spa[0] = 127;
+	arp->arp_spa[1] = 0;
+	arp->arp_spa[2] = 0;
+	arp->arp_spa[3] = 1;
 
 	/* target hardware address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
- TODO();
+// TODO();
+	arp->arp_tha[0] = DESTMAC0;
+	arp->arp_tha[1] = DESTMAC1;
+	arp->arp_tha[2] = DESTMAC2;
+	arp->arp_tha[3] = DESTMAC3;
+	arp->arp_tha[4] = DESTMAC4;
+	arp->arp_tha[5] = DESTMAC5;
 
 	/* target protocol address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
- TODO();
+// TODO();
+	arp->arp_tpa[0] = 127;
+	arp->arp_tpa[1] = 0;
+	arp->arp_tpa[2] = 0;
+	arp->arp_tpa[3] = 1;
 
 }
 
@@ -109,7 +129,7 @@ int main() {
 	sock_raw = socket(AF_PACKET, SOCK_RAW, ETH_P_IP);
 	if (sock_raw == -1)
 		printf("error in socket");
-	sendbuff = (unsigned char *)malloc(64); // increase in case of large data.
+	sendbuff = (unsigned char*)malloc(64); // increase in case of large data.
 	memset(sendbuff, 0, 64);
 	get_eth_index(); // interface number
 	get_mac();
@@ -125,7 +145,7 @@ int main() {
 	sadr_ll.sll_addr[5] = DESTMAC5;
 	printf("sending...\n");
 	while (1) {
-		send_len = sendto(sock_raw, sendbuff, 64, 0, (const struct sockaddr *)&sadr_ll, sizeof(struct sockaddr_ll));
+		send_len = sendto(sock_raw, sendbuff, 64, 0, (const struct sockaddr*)&sadr_ll, sizeof(struct sockaddr_ll));
 		if (send_len < 0) {
 			printf("error in sending....sendlen=%d....errno=%d\n", send_len, errno);
 			return -1;

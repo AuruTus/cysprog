@@ -2,7 +2,7 @@ all: arp udp tcp
 
 .PHONY: arp
 arp:
-	gcc -o arp_forge.out arp.c
+	gcc -o arp_forge.out ARP-forge.c
 
 .PHONY: tcp
 tcp:
@@ -14,5 +14,5 @@ udp:
 
 .PHONY: clean
 clean:
-  rm -rf *.out
+	rm -rf *.out
 

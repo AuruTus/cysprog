@@ -38,7 +38,7 @@ int total_len = 0, send_len;
 void get_eth_index() {
 	memset(&ifreq_i, 0, sizeof(ifreq_i));
 	// Replace ens33 with your network interface
-	strncpy(ifreq_i.ifr_name, "ens33", IFNAMSIZ - 1);
+	strncpy(ifreq_i.ifr_name, "eth0", IFNAMSIZ - 1);
 	if ((ioctl(sock_raw, SIOCGIFINDEX, &ifreq_i)) < 0)
 		printf("error in index ioctl reading");
 	printf("index=%d\n", ifreq_i.ifr_ifindex);
@@ -47,7 +47,7 @@ void get_eth_index() {
 void get_mac() {
 	memset(&ifreq_c, 0, sizeof(ifreq_c));
 	// Replace ens33 with your network interface
-	strncpy(ifreq_c.ifr_name, "ens33", IFNAMSIZ - 1);
+	strncpy(ifreq_c.ifr_name, "eth0", IFNAMSIZ - 1);
 	if ((ioctl(sock_raw, SIOCGIFHWADDR, &ifreq_c)) < 0)
 		printf("error in SIOCGIFHWADDR ioctl reading");
 	printf("Mac= %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n",
@@ -86,27 +86,24 @@ void get_arp() {
 	/* sender hardware address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
-// TODO();
-	arp->arp_sha[0] = DESTMAC0;
-	arp->arp_sha[1] = DESTMAC1;
-	arp->arp_sha[2] = DESTMAC2;
-	arp->arp_sha[3] = DESTMAC3;
-	arp->arp_sha[4] = DESTMAC4;
-	arp->arp_sha[5] = DESTMAC5;
+	arp->arp_sha[0] = 0x00;
+	arp->arp_sha[1] = 0x15;
+	arp->arp_sha[2] = 0x5d;
+	arp->arp_sha[3] = 0xff;
+	arp->arp_sha[4] = 0xe1;
+	arp->arp_sha[5] = 0x3d;
 
 	/* sender protocol address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
-// TODO();
-	arp->arp_spa[0] = 127;
+	arp->arp_spa[0] = 0;
 	arp->arp_spa[1] = 0;
 	arp->arp_spa[2] = 0;
-	arp->arp_spa[3] = 1;
+	arp->arp_spa[3] = 0;
 
 	/* target hardware address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
-// TODO();
 	arp->arp_tha[0] = DESTMAC0;
 	arp->arp_tha[1] = DESTMAC1;
 	arp->arp_tha[2] = DESTMAC2;
@@ -117,11 +114,10 @@ void get_arp() {
 	/* target protocol address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
-// TODO();
-	arp->arp_tpa[0] = 127;
-	arp->arp_tpa[1] = 0;
-	arp->arp_tpa[2] = 0;
-	arp->arp_tpa[3] = 1;
+	arp->arp_tpa[0] = 255;
+	arp->arp_tpa[1] = 255;
+	arp->arp_tpa[2] = 255;
+	arp->arp_tpa[3] = 255;
 
 }
 

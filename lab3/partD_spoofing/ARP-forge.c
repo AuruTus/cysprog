@@ -86,20 +86,45 @@ void get_arp() {
 	/* sender hardware address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
-	arp->arp_sha[0] = 0x00;
-	arp->arp_sha[1] = 0x15;
-	arp->arp_sha[2] = 0x5d;
-	arp->arp_sha[3] = 0xff;
-	arp->arp_sha[4] = 0xe1;
-	arp->arp_sha[5] = 0x3d;
+	memset(&ifreq_ip, 0, sizeof(ifreq_ip));
+	// Replace ens33 with your network interface
+	strncpy(ifreq_ip.ifr_name, "eth0", IFNAMSIZ - 1);
+	if ((ioctl(sock_raw, SIOCGIFHWADDR, &ifreq_ip)) < 0)
+		printf("error in SIOCGIFHWADDR ioctl reading");
+
+	printf("Mac= %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n",
+		(unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[0]),
+		(unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[1]),
+		(unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[2]),
+		(unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[3]),
+		(unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[4]),
+		(unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[5]));
+
+	printf("arp packaging start ... \n");
+	arp->arp_sha[0] = (unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[0]);
+	arp->arp_sha[1] = (unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[1]);
+	arp->arp_sha[2] = (unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[2]);
+	arp->arp_sha[3] = (unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[3]);
+	arp->arp_sha[4] = (unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[4]);
+	arp->arp_sha[5] = (unsigned char)(ifreq_ip.ifr_hwaddr.sa_data[5]);
 
 	/* sender protocol address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
-	arp->arp_spa[0] = 0;
-	arp->arp_spa[1] = 0;
-	arp->arp_spa[2] = 0;
-	arp->arp_spa[3] = 0;
+	if ((ioctl(sock_raw, SIOCGIFADDR, &ifreq_ip)) < 0)
+		printf("error in SIOCGIFADDR ioctl reading");
+	in_addr_t ip_addr = ((struct sockaddr_in*)&ifreq_ip.ifr_addr)->sin_addr.s_addr;
+	arp->arp_spa[0] = ip_addr & 0xFF;
+	arp->arp_spa[1] = ip_addr >> 8 & 0xFF;
+	arp->arp_spa[2] = ip_addr >> 16 & 0xFF;
+	arp->arp_spa[3] = ip_addr >> 24 & 0xFF;
+	printf("ip address: %d.%d.%d.%d\n",
+		arp->arp_spa[0],
+		arp->arp_spa[1],
+		arp->arp_spa[2],
+		arp->arp_spa[3]
+	);
+
 
 	/* target hardware address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
@@ -114,11 +139,12 @@ void get_arp() {
 	/* target protocol address */
 	// Exercise 4: Complete ARP_forge.c in your project to achieve the forgery of ARP protocol packets:
  // Add your code here:
-	arp->arp_tpa[0] = 255;
-	arp->arp_tpa[1] = 255;
-	arp->arp_tpa[2] = 255;
-	arp->arp_tpa[3] = 255;
-
+	arp->arp_tpa[0] = 0xFF;
+	arp->arp_tpa[1] = 0xFF;
+	arp->arp_tpa[2] = 0xFF;
+	arp->arp_tpa[3] = 0xFF;
+	printf("arp packaging done.\n");
+	total_len += sizeof(struct ether_arp);
 }
 
 int main() {

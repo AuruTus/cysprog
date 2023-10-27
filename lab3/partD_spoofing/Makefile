@@ -10,7 +10,7 @@ tcp:
 
 .PHONY: udp
 udp:
-	@echo TODO
+	gcc -o udp_forge.out UDP-forge.c
 
 .PHONY: clean
 clean:

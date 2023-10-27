@@ -23,7 +23,7 @@ do{\
 
 struct ifreq ifreq_c, ifreq_i, ifreq_ip; /// for each ioctl keep diffrent ifreq structure otherwise error may come in sending(sendto )
 int sock_raw;
-unsigned char *sendbuff;
+unsigned char* sendbuff;
 
 #define DESTMAC0 0x00
 #define DESTMAC1 0x0c
@@ -39,7 +39,7 @@ int total_len = 0, send_len;
 void get_eth_index() {
 	memset(&ifreq_i, 0, sizeof(ifreq_i));
 	// Replace ens33 with your network interface
-	strncpy(ifreq_i.ifr_name, "ens33", IFNAMSIZ - 1);
+	strncpy(ifreq_i.ifr_name, "eth0", IFNAMSIZ - 1);
 	if ((ioctl(sock_raw, SIOCGIFINDEX, &ifreq_i)) < 0)
 		printf("error in index ioctl reading");
 	printf("index=%d\n", ifreq_i.ifr_ifindex);
@@ -48,12 +48,12 @@ void get_eth_index() {
 void get_mac() {
 	memset(&ifreq_c, 0, sizeof(ifreq_c));
 	// Replace ens33 with your network interface
-	strncpy(ifreq_c.ifr_name, "ens33", IFNAMSIZ - 1);
+	strncpy(ifreq_c.ifr_name, "eth0", IFNAMSIZ - 1);
 	if ((ioctl(sock_raw, SIOCGIFHWADDR, &ifreq_c)) < 0)
 		printf("error in SIOCGIFHWADDR ioctl reading");
 	printf("Mac= %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n", (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[0]), (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[1]), (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[2]), (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[3]), (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[4]), (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[5]));
 	printf("ethernet packaging start ... \n");
-	struct ethhdr *eth = (struct ethhdr *)(sendbuff);
+	struct ethhdr* eth = (struct ethhdr*)(sendbuff);
 	eth->h_source[0] = (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[0]);
 	eth->h_source[1] = (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[1]);
 	eth->h_source[2] = (unsigned char)(ifreq_c.ifr_hwaddr.sa_data[2]);
@@ -80,62 +80,64 @@ void get_data() {
 }
 
 void get_udp() {
-	struct udphdr *uh = (struct udphdr *)(sendbuff + sizeof(struct iphdr) + sizeof(struct ethhdr));
+	struct udphdr* uh = (struct udphdr*)(sendbuff + sizeof(struct iphdr) + sizeof(struct ethhdr));
 	// Exercise 5: Write UDP_forge.c in your project to achieve the forgery of UDP protocol packets:
-    // Add your code here:
-    TODO();
-
+	// Add your code here:
+	uh->source = 12345;
+	uh->dest = 12346;
+	uh->len = sizeof(struct udphdr) + 5;
+	uh->check = 0; // optional for ipv4
+	total_len += sizeof(struct udphdr);
 }
 
-unsigned short checksum(unsigned char *buf, int size) {
+unsigned short checksum(unsigned char* buf, int size) {
 	unsigned int checkSum = 0;
-	for (int i = 0; i < size; i += 2){
+	for (int i = 0; i < size; i += 2) {
 		unsigned short first = (unsigned short)buf[i] << 8;
 		unsigned short second = (unsigned short)buf[i + 1] & 0x00ff;
 		checkSum += first + second;
 	}
-	while (1){
+	while (1) {
 		unsigned short c = (checkSum >> 16);
-		if (c > 0){
+		if (c > 0) {
 			checkSum = (checkSum << 16) >> 16;
 			checkSum += c;
-		}
-		else{
+		} else {
 			break;
 		}
 	}
 	return ~checkSum;
 }
 
-void get_ip(){
+void get_ip() {
 	memset(&ifreq_ip, 0, sizeof(ifreq_ip));
 	// Replace ens33 with your network interface
-	strncpy(ifreq_ip.ifr_name, "ens33", IFNAMSIZ - 1);
-	if (ioctl(sock_raw, SIOCGIFADDR, &ifreq_ip) < 0){
+	strncpy(ifreq_ip.ifr_name, "eth0", IFNAMSIZ - 1);
+	if (ioctl(sock_raw, SIOCGIFADDR, &ifreq_ip) < 0) {
 		printf("error in SIOCGIFADDR \n");
 	}
-	printf("%s\n", inet_ntoa((((struct sockaddr_in *)&(ifreq_ip.ifr_addr))->sin_addr)));
-	struct iphdr *iph = (struct iphdr *)(sendbuff + sizeof(struct ethhdr));
+	printf("%s\n", inet_ntoa((((struct sockaddr_in*)&(ifreq_ip.ifr_addr))->sin_addr)));
+	struct iphdr* iph = (struct iphdr*)(sendbuff + sizeof(struct ethhdr));
 	iph->ihl = 5;
 	iph->version = 4;
 	iph->tos = 16;
 	iph->id = htons(10201);
 	iph->ttl = 64;
 	iph->protocol = 17;
-	iph->saddr = inet_addr(inet_ntoa((((struct sockaddr_in *)&(ifreq_ip.ifr_addr))->sin_addr)));
+	iph->saddr = inet_addr(inet_ntoa((((struct sockaddr_in*)&(ifreq_ip.ifr_addr))->sin_addr)));
 	iph->daddr = inet_addr("192.168.117.138"); // put destination IP address
 	printf("destIP:%.2X\n", iph->daddr);
 	total_len += sizeof(struct iphdr);
 	get_udp();
 	iph->tot_len = htons(total_len - sizeof(struct ethhdr));
-	iph->check = htons(checksum((unsigned char *)(sendbuff + sizeof(struct ethhdr)), sizeof(struct iphdr)));
+	iph->check = htons(checksum((unsigned char*)(sendbuff + sizeof(struct ethhdr)), sizeof(struct iphdr)));
 }
 
 int main() {
 	sock_raw = socket(AF_PACKET, SOCK_RAW, ETH_P_IP);
 	if (sock_raw == -1)
 		printf("error in socket");
-	sendbuff = (unsigned char *)malloc(64); // increase in case of large data.
+	sendbuff = (unsigned char*)malloc(64); // increase in case of large data.
 	memset(sendbuff, 0, 64);
 	get_eth_index(); // interface number
 	get_mac();
@@ -151,7 +153,7 @@ int main() {
 	sadr_ll.sll_addr[5] = DESTMAC5;
 	printf("sending...\n");
 	while (1) {
-		send_len = sendto(sock_raw, sendbuff, 64, 0, (const struct sockaddr *)&sadr_ll, sizeof(struct sockaddr_ll));
+		send_len = sendto(sock_raw, sendbuff, 64, 0, (const struct sockaddr*)&sadr_ll, sizeof(struct sockaddr_ll));
 		if (send_len < 0) {
 			printf("error in sending....sendlen=%d....errno=%d\n", send_len, errno);
 			return -1;

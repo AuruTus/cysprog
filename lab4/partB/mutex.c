@@ -22,24 +22,36 @@ struct counter_t {
 
 struct counter_t shared_counter;
 
-void initialize_counter(struct counter_t *counter) {
+void initialize_counter(struct counter_t* counter) {
     // Exercise 2: Use the mutex to solve this problem
     // Add your code here:
-    TODO();
+    if (!counter) {
+        perror("null counter");
+        exit(1);
+    }
+    counter->counter = 0;
+    pthread_mutex_init(&counter->counter_mutex, 0);
+}
+
+void* increment_count(void* arg) {
+    // Exercise 2: Use the mutex to solve this problem
+    // Add your code here:
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+        pthread_mutex_lock(&shared_counter.counter_mutex);
+        shared_counter.counter++;
+        pthread_mutex_unlock(&shared_counter.counter_mutex);
+    }
 
 }
 
-void *increment_count(void *arg) {
+void* decrement_count(void* arg) {
     // Exercise 2: Use the mutex to solve this problem
     // Add your code here:
-    TODO();
-
-}
-
-void *decrement_count(void *arg) {
-    // Exercise 2: Use the mutex to solve this problem
-    // Add your code here:
-    TODO();
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+        pthread_mutex_lock(&shared_counter.counter_mutex);
+        shared_counter.counter--;
+        pthread_mutex_unlock(&shared_counter.counter_mutex);
+    }
 
 }
 

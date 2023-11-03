@@ -22,24 +22,36 @@ struct counter_t {
 
 struct counter_t shared_data;
 
-void initialize_counter(struct counter_t *counter) {
+void initialize_counter(struct counter_t* counter) {
     // Exercise 3: Use the SpinLocks to solve this problem
     // Add your code here:
-    TODO();
+    if (!counter) {
+        perror("null counter");
+        exit(1);
+    }
+    counter->counter = 0;
+    pthread_spin_init(&counter->spinlock, PTHREAD_PROCESS_PRIVATE);
+}
+
+void* increment_count(void* arg) {
+    // Exercise 3: Use the SpinLocks to solve this problem
+    // Add your code here:
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+        pthread_spin_lock(&shared_data.spinlock);
+        shared_data.counter++;
+        pthread_spin_unlock(&shared_data.spinlock);
+    }
 
 }
 
-void *increment_count(void *arg) {
+void* decrement_count(void* arg) {
     // Exercise 3: Use the SpinLocks to solve this problem
     // Add your code here:
-    TODO();
-
-}
-
-void *decrement_count(void *arg) {
-    // Exercise 3: Use the SpinLocks to solve this problem
-    // Add your code here:
-    TODO();
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+        pthread_spin_lock(&shared_data.spinlock);
+        shared_data.counter--;
+        pthread_spin_unlock(&shared_data.spinlock);
+    }
 
 }
 

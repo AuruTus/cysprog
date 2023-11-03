@@ -16,14 +16,14 @@ do{\
 
 long count = 0;
 
-void *increment_count(void *arg) {
+void* increment_count(void* arg) {
     for (long i = 0; i < NUM_ITERATIONS; i++) {
         count++;
     }
     pthread_exit(0);
 }
 
-void *decrement_count(void *arg) {
+void* decrement_count(void* arg) {
     for (long i = 0; i < NUM_ITERATIONS; i++) {
         count--;
     }
@@ -44,6 +44,6 @@ int main() {
     }
 
     printf("Expected count: 0 (because half increment and half decrement)\n");
-    printf("Actual count: %d\n", count);
+    printf("Actual count: %ld\n", count);
     pthread_exit(0);
 }

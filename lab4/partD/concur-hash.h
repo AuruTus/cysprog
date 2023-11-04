@@ -13,21 +13,22 @@ do{\
 #include <pthread.h>
 
 typedef struct Node_t {
-    char *key;
-    char *value;
-    struct Node_t *next;
+    char* key;
+    char* value;
+    struct Node_t* next;
 } node_t;
 
 typedef struct Hash_t {
     pthread_mutex_t mu;
-    node_t **buckets;
+    node_t** buckets;
     int num_buckets;
+    int size;
 } hash_t;
 
-void hash_init(hash_t *hash, int num_buckets);
-void hash_insert(hash_t *ht, char *key, char *value);
-char *hash_lookup(hash_t *ht, char *key);
-int hash_delete(hash_t *ht, char *key);
-int hash_size(hash_t *ht);
+void hash_init(hash_t* hash, int num_buckets);
+void hash_insert(hash_t* ht, char* key, char* value);
+char* hash_lookup(hash_t* ht, char* key);
+int hash_delete(hash_t* ht, char* key);
+int hash_size(hash_t* ht);
 
 #endif

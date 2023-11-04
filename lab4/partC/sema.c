@@ -13,25 +13,31 @@ do{\
 
 
 
-void sema_init(sema_t *sem, int v) {
+void sema_init(sema_t* sem, int v) {
     // Exercise 2:
     // Add your code here:
-    TODO();
-
+    if (v <= 0) {
+        perror("invalid val");
+        return;
+    }
+    atomic_init(&sem->value, v);
 }
 
-void sema_wait(sema_t *sem) {
+void sema_wait(sema_t* sem) {
     // Exercise 2:
     // Add your code here:
-    TODO();
-
+    while (1) {
+        int val = atomic_load(&sem->value);
+        if (val > 0 &&
+            atomic_compare_exchange_strong(&sem->value, &val, val - 1))
+            break;
+    }
 }
 
-void sema_post(sema_t *sem) {
+void sema_post(sema_t* sem) {
     // Exercise 2:
     // Add your code here:
-    TODO();
-
+    atomic_fetch_add(&sem->value, 1);
 }
 
 typedef struct {
@@ -41,12 +47,13 @@ typedef struct {
 
 counter_t counter;
 
-void *start(void *arg) {
+void* start(void* arg) {
     for (int i = 0; i < 10000; i++) {
         // Exercise 2:
         // Add your code here:
-        TODO();
-
+        sema_wait(&counter.sem);
+        counter.num++;
+        sema_post(&counter.sem);
     }
     pthread_exit(0);
 }
@@ -63,7 +70,7 @@ int main() {
         pthread_join(pids[i], NULL);
     }
 
-    printf("Counter: %d\n", counter.num);
     assert(counter.num == 100000);
+    printf("Counter: %d\n", counter.num);
     return 0;
 }

@@ -10,7 +10,7 @@ spinlock:
 	./spinlock.out
 
 semlock:
-	gcc semlock.c -o semlock.out
+	gcc sema.c -o semlock.out
 	./semlock.out
 
 clean:

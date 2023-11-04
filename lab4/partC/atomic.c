@@ -11,22 +11,24 @@ do{\
 
 
 
-
+#define N 10000
 atomic_int acnt;
 int cnt;
 
-void *start(void *thr_data) {
+void* start(void* thr_data) {
     // Exercise 2:
     // Add your code here:
-    TODO();
-
-    return NULL;
+    for (int n = 0; n < N; n++) {
+        cnt++;
+        atomic_fetch_add(&acnt, 1); // Use atomic functions
+    }
+    pthread_exit(0);
 }
 
 int main(void) {
     pthread_t pids[10];
     // Initialize atomic variable
-    atomic_init(&acnt, 0);  
+    atomic_init(&acnt, 0);
     cnt = 0;
     for (int n = 0; n < 10; ++n)
         pthread_create(&pids[n], NULL, start, NULL);

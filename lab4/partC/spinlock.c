@@ -14,25 +14,25 @@ do{\
 
 #include "spinlock.h"
 
-void spinlock_init(spinlock_t *lock){
+void spinlock_init(spinlock_t* lock) {
     // Exercise 2:
     // Add your code here:
-    TODO();
-
+    atomic_init(&lock->n, 0);
 }
 
-void spinlock_lock(spinlock_t *lock){
+void spinlock_lock(spinlock_t* lock) {
     // Exercise 2:
     // Add your code here:
-    TODO();
-
+    int n = 0;
+    while (!atomic_compare_exchange_strong(&lock->n, &n, 1)) {
+        n = 0;
+    }
 }
 
-void spinlock_unlock(spinlock_t *lock){
+void spinlock_unlock(spinlock_t* lock) {
     // Exercise 2:
     // Add your code here:
-    TODO();
-
+    atomic_store(&lock->n, 0);
 }
 
 typedef struct {
@@ -42,22 +42,23 @@ typedef struct {
 
 counter_t counter;
 
-void *start(){
-    for(int i = 0; i < 10000; i++){
+void* start() {
+    for (int i = 0; i < 10000; i++) {
         // Exercise 2:
         // Add your code here:
-        TODO();
-
+        spinlock_lock(&counter.lock);
+        counter.num++;
+        spinlock_unlock(&counter.lock);
     }
     pthread_exit(0);
 }
 
-int main(){
+int main() {
     pthread_t pids[10];
 
     spinlock_init(&counter.lock);
 
-    for(int i = 0; i < 10; i++){
+    for (int i = 0; i < 10; i++) {
         pthread_create(&pids[i], NULL, start, NULL);
     }
 

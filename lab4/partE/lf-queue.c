@@ -30,7 +30,7 @@ void lf_queue_enqueue(lf_queue_t* queue, int value) {
         if (atomic_compare_exchange_strong(&queue->rear, &old_rear, new)) {
             atomic_fetch_add(&queue->size, 1);
             if (old_rear == NULL) {
-                while (!atomic_compare_exchange_strong(&queue->front, &old_rear, new)) {}
+                while (!atomic_compare_exchange_strong(&queue->front, &old_rear, new));
             } else { old_rear->next = new; }
             break;
         }
@@ -44,11 +44,16 @@ int lf_queue_dequeue(lf_queue_t* queue) {
     node_t* old_next;
     while (1) {
         old_front = atomic_load(&queue->front);
-        if (old_front == NULL)
-            return -1;
-        old_next = old_front->next;
+        if (old_front == NULL) {
+            old_front = atomic_load(&queue->front);
+            if (old_front == NULL) {
+                return -1;
+            }
+        }
+        old_next = old_front->next; // still some memory leak bugs if enqueue happens later and completes while old_next is NULL
         if (atomic_compare_exchange_strong(&(queue->front), &old_front, old_next)) {
             atomic_fetch_add(&queue->size, -1);
+            while (old_next == NULL && !atomic_compare_exchange_strong(&queue->rear, &old_front, old_next));
             break;
         }
     }
